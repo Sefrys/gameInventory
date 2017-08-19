@@ -11,7 +11,7 @@ def display_inventory(inventory):
     for key, value in inventory.items():
         count = count + value
         print(value, key)
-    print("Total number of items: " + str(count))
+    print("Total number of items: " + str(count) + "\n")
 
 
 # Adds to the inventory dictionary a list of items from added_items.
@@ -33,7 +33,7 @@ def add_to_inventory(inventory, added_items):
 # - "count,desc" means the table is ordered by count (of items in the inventory)
 #   in descending order
 # - "count,asc" means the table is ordered by count in ascending order
-def print_table(inventory, order="desc"):
+def print_table(inventory, order=None):
 
     count = 0
     print("\n" + "Inventory: ")
@@ -44,15 +44,16 @@ def print_table(inventory, order="desc"):
             print("{0:>4} {1:>12}".format(value, key))
             count = count + value
 
-    elif order == "count":
+    elif order == "asc":
         for key, value in sorted(inventory.items(), key=itemgetter(1), reverse=False):
             print("{0:>4} {1:>12}".format(value, key))
             count = count + value
 
     else:
         for key, value in inventory.items():
+            print("{0:>4} {1:>12}".format(value, key))
             count = count + value
-            print(value, key)
+
     print("-"*17)
     print("Total number of items: " + str(count))
 
@@ -63,7 +64,7 @@ def print_table(inventory, order="desc"):
 # "import_inventory.csv". The import automatically merges items by name.
 # The file format is plain text with comma separated values (CSV).
 def import_inventory(inventory, filename="import_inventory.csv"):
-    added_items = list(csv.reader(open(filename)))
+    added_items = list(csv.reader(open(filename, 'r')))
     added_items = added_items[0]
     add_to_inventory(inventory, added_items)
     return(added_items)
@@ -75,18 +76,33 @@ def import_inventory(inventory, filename="import_inventory.csv"):
 # called "export_inventory.csv". The file format is the same plain text
 # with comma separated values (CSV).
 def export_inventory(inventory, filename="export_inventory.csv"):
-    pass
+    exported_file = open(filename, 'w')
+    exported_string = ''
+    for key in inventory:
+        exported_string += ((key + ',') * inventory[key]) + ','
+        exported_string = exported_string[:len(exported_string)- 1]
+    exported_string = exported_string[:len(exported_string) - 1]
+    exported_file.write(exported_string)
+    exported_file.close()
 
 
 # Main function sets initial variables and stores rest of the functions
 def main():
     inventory = {'rope': 1, 'torch': 6, 'gold coin': 42, 'dagger': 1, 'arrow': 12}
-
-
     dragon_loot = ['gold coin', 'dagger', 'gold coin', 'gold coin', 'ruby']
-    added_items = dragon_loot
-    import_inventory(inventory, "inventory_import.csv")
-    inventory = add_to_inventory(inventory, added_items)
+
     display_inventory(inventory)
-    print_table(inventory)
+
+    inventory = add_to_inventory(inventory, dragon_loot)
+    display_inventory(inventory)
+
+    print_table(inventory, "desc")
+
+    imported_items = import_inventory(inventory, "inventory_import.csv")
+
+    inventory = add_to_inventory(inventory, imported_items)
+
+    print_table(inventory, "desc")
+    export_inventory(inventory)
+
 main()
